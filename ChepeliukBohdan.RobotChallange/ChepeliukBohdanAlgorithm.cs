@@ -24,12 +24,15 @@ namespace ChepeliukBohdan.RobotChallange {
             Robot.Common.Robot movingRobot = robots[robotToMoveIndex];
 
             EnergyStation nearestStation = HelperMethods.FindNearestFreeStation(movingRobot, map, robots);
-
-            if ((movingRobot.Energy > 600) && roundNumber < maxRoundNumber - 20 && 
-                (robots.Count < map.Stations.Count || (movingRobot.Energy > 1000) && 
-                HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 300)) {
-                return new CreateNewRobotCommand();
+            if (nearestStation != null) {
+                if ((movingRobot.Energy > 600) && roundNumber < maxRoundNumber - 20 &&
+                    (robots.Count < map.Stations.Count || (movingRobot.Energy > 1000) &&
+                    HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 300))
+                {
+                    return new CreateNewRobotCommand();
+                }
             }
+
 
             int nearestStationEnergy = HelperMethods.StationEnergy(movingRobot.Position, map);
             if (nearestStationEnergy != -1) // && (nearestStationEnergy > 0 || movingRobot.Energy < 500)
