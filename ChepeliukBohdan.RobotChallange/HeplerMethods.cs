@@ -15,7 +15,7 @@ namespace ChepeliukBohdan.RobotChallange {
             EnergyStation nearest = null;
             int minDistance = int.MaxValue;
             foreach (var station in map.Stations) {
-                if (!ChepeliukBohdanAlgorithm.prefferedPositions.Contains(station.Position) 
+                if (!ChepeliukBohdanAlgorithm.prefferedPositions.Values.Contains(station.Position) 
                     && IsStationFree(station, movingRobot, robots)) {
                     int d = FindDistance(station.Position, movingRobot.Position);
                     if (d < minDistance) {
@@ -25,6 +25,21 @@ namespace ChepeliukBohdan.RobotChallange {
                 }
             }
             return nearest == null ? null : nearest;
+        }
+
+        public static int Closer(Position start, Position p1, Position p2) {
+            int d1 = FindDistance(start, p1);
+            int d2 = FindDistance(start, p2);
+            return d1 > d2 ? 1 : d1 == d2 ? 0 : -1;
+        }
+
+        public static int StationEnergy(Position pos, Map map) {
+            foreach (var station in map.Stations) { 
+                if(station.Position == pos) {
+                    return station.Energy;
+                }
+            }
+            return -1;
         }
 
         public static bool IsStationFree(EnergyStation station, Robot.Common.Robot movingRobot, IList<Robot.Common.Robot> robots) {
@@ -46,7 +61,7 @@ namespace ChepeliukBohdan.RobotChallange {
         }
 
         public static Position MinimalMove(Position curr, Position target, int energy) {
-            int steps = (int)Math.Ceiling(Math.Sqrt(FindDistance(curr, target)) / energy);
+            int steps = (int)Math.Ceiling(FindDistance(curr, target) / (double)energy);
             Position move = new Position(curr.X + (target.X - curr.X) / steps, curr.Y + (target.Y - curr.Y) / steps);
             return move;
         }
@@ -59,7 +74,7 @@ namespace ChepeliukBohdan.RobotChallange {
                 return MinimalMove(curr, target, energy);
             }
 
-            int steps = (int)Math.Ceiling(Math.Sqrt(dist) / 7.0);
+            int steps = (int)Math.Ceiling(Math.Sqrt(dist) / 10.0);
             Position move = new Position(curr.X + (target.X - curr.X) / steps, curr.Y + (target.Y - curr.Y) / steps);
             if (FindDistance(curr, move) * steps > energy) {
                 return MinimalMove(curr, target, energy);
