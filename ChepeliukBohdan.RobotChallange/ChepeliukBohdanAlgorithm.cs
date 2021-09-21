@@ -25,8 +25,9 @@ namespace ChepeliukBohdan.RobotChallange {
 
             EnergyStation nearestStation = HelperMethods.FindNearestFreeStation(movingRobot, map, robots);
 
-            if ((movingRobot.Energy > 1000) && (robots.Count < map.Stations.Count) && roundNumber < maxRoundNumber - 10 &&
-                HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 400) {
+            if ((movingRobot.Energy > 600) && roundNumber < maxRoundNumber - 20 && 
+                (robots.Count < map.Stations.Count || (movingRobot.Energy > 1000) && 
+                HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 300)) {
                 return new CreateNewRobotCommand();
             }
 
@@ -35,21 +36,21 @@ namespace ChepeliukBohdan.RobotChallange {
                 return new CollectEnergyCommand();
 
             Position move = NextTarget(movingRobot, map, robots);
+            //prefferedPositions[robotToMoveIndex] = move;
             move = HelperMethods.OptimalMove(movingRobot.Position, move, movingRobot.Energy);
-            prefferedPositions[robotToMoveIndex] = move;
 
-            if (move == movingRobot.Position) {
+            if (move == movingRobot.Position) { 
                 prefferedPositions[robotToMoveIndex] = null;
                 move = HelperMethods.MinimalMove(movingRobot.Position, nearestStation.Position, movingRobot.Energy);
-            }
+            } 
 
             return new MoveCommand() { NewPosition = move };
-        }
+        } 
 
         public Position NextTarget(Robot.Common.Robot movingRobot, Map map, IList<Robot.Common.Robot> robots) {
             const double stationCoef = 1000.0;
             const double proximityCoef = 100.0;
-            const double attackCoef = 0.01;
+            const double attackCoef = 10000;
             var targets = new Dictionary<Position, double> { };
 
             foreach (var station in map.Stations) {
