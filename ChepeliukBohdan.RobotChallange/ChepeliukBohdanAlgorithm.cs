@@ -6,12 +6,17 @@ using Robot.Common;
 
 namespace ChepeliukBohdan.RobotChallange {
 
+    delegate Position NextTargetHandler(Robot.Common.Robot curr, Map map, IList<Robot.Common.Robot> robots);
     public class ChepeliukBohdanAlgorithm : IRobotAlgorithm {
         public static Dictionary<int, Position> prefferedPositions = new Dictionary<int, Position>();
         public static int roundNumber = 0;
         private const int maxRoundNumber = 50;
+        event NextTargetHandler NextTargetEvent;
 
-        public ChepeliukBohdanAlgorithm() => Logger.OnLogRound += new LogRoundEventHandler(this.Logger_OnLogRound);
+        public ChepeliukBohdanAlgorithm() {
+            NextTargetEvent += NextTarget;
+            Logger.OnLogRound += new LogRoundEventHandler(this.Logger_OnLogRound);
+        }
 
         private void Logger_OnLogRound(object sender, LogRoundEventArgs e) => ++roundNumber;
 
@@ -19,15 +24,16 @@ namespace ChepeliukBohdan.RobotChallange {
             roundNumber++;
         }
 
+
         public RobotCommand DoStep(IList<Robot.Common.Robot> robots, int robotToMoveIndex, Map map) {
             int robotCount = robots.Where(n => n.OwnerName == Author).Count();
             Robot.Common.Robot movingRobot = robots[robotToMoveIndex];
 
             EnergyStation nearestStation = HelperMethods.FindNearestFreeStation(movingRobot, map, robots);
             if (nearestStation != null) {
-                if ((movingRobot.Energy > 600) && roundNumber < maxRoundNumber - 20 &&
-                    (robots.Count < map.Stations.Count || (movingRobot.Energy > 1000) &&
-                    HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 300))
+                if ((movingRobot.Energy > 320) && roundNumber < maxRoundNumber - 20 &&
+                    (robots.Count < map.Stations.Count || (movingRobot.Energy > 1000)) &&
+                    HelperMethods.FindDistance(nearestStation.Position, movingRobot.Position) < 300)
                 {
                     return new CreateNewRobotCommand();
                 }
@@ -38,7 +44,12 @@ namespace ChepeliukBohdan.RobotChallange {
             if (nearestStationEnergy != -1) // && (nearestStationEnergy > 0 || movingRobot.Energy < 500)
                 return new CollectEnergyCommand();
 
-            Position move = NextTarget(movingRobot, map, robots);
+            Position move = null;
+            NextTargetEvent += NextTarget;
+            if (NextTargetEvent != null) {
+                move = NextTargetEvent(movingRobot, map, robots);
+            }
+            //Position move = NextTarget(movingRobot, map, robots);
             //prefferedPositions[robotToMoveIndex] = move;
             move = HelperMethods.OptimalMove(movingRobot.Position, move, movingRobot.Energy);
 

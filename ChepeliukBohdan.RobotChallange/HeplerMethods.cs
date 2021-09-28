@@ -30,7 +30,7 @@ namespace ChepeliukBohdan.RobotChallange {
         public static int Closer(Position start, Position p1, Position p2) {
             int d1 = FindDistance(start, p1);
             int d2 = FindDistance(start, p2);
-            return d1 > d2 ? 1 : d1 == d2 ? 0 : -1;
+            return d1 < d2 ? 1 : d1 == d2 ? 0 : -1;
         }
 
         public static int StationEnergy(Position pos, Map map) {
